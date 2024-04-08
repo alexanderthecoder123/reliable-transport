@@ -19,20 +19,30 @@ struct reliable_state {
     rel_t *next;			/* Linked list for traversing all connections */
     rel_t **prev;
 
-    conn_t *c;			/* This is the connection object */
-
-    /* Add your own data fields below this */
+    conn_t *c;			
     // ...
     buffer_t* send_buffer;
     // ...
     buffer_t* rec_buffer;
     // ...
+    int maximal_pot_window;
+    int send_una;
+    int send_next;
+    int recv_next;
+    int time_out;
 
+    int end_of_file_recv;
+    int end_of_file_read;
 };
 rel_t *rel_list;
 
-/* Creates a new reliable protocol session, returns NULL on failure.
-* ss is always NULL */
+long obtain_time(){
+    struct timeval now;
+    gettimeofday(&now, NULL);
+    return now.tv_sec * 1000 + now.tv_usec/1000;
+}
+
+
 rel_t *
 rel_create (conn_t *c, const struct sockaddr_storage *ss,
 const struct config_common *cc)
@@ -49,6 +59,15 @@ const struct config_common *cc)
             return NULL;
         }
     }
+
+    r->maximal_pot_window = cc->window;
+    r->send_una = 0;
+    r->send_next = 1;
+    r->recv_next = 1;
+    r->time_out = cc->timeout;
+
+    r->end_of_file_recv = 0;
+    r->end_of_file_read = 0;
 
     r->c = c;
     r->next = rel_list;
@@ -84,36 +103,28 @@ rel_destroy (rel_t *r)
     buffer_clear(r->rec_buffer);
     free(r->rec_buffer);
     // ...
-
+   
 }
 
-// n is the expected length of pkt
+
+
 void
 rel_recvpkt (rel_t *r, packet_t *pkt, size_t n)
 {
-    /* Your logic implementation here */
-}
+}    
 
 void
 rel_read (rel_t *s)
 {
-    /* Your logic implementation here */
 }
 
 void
 rel_output (rel_t *r)
 {
-    /* Your logic implementation here */
 }
 
 void
 rel_timer ()
 {
-    // Go over all reliable senders, and have them send out
-    // all packets whose timer has expired
-    rel_t *current = rel_list;
-    while (current != NULL) {
-        // ...
-        current = current->next;
-    }
 }
+
