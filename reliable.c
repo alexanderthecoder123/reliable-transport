@@ -116,6 +116,23 @@ rel_recvpkt (rel_t *r, packet_t *pkt, size_t n)
 void
 rel_read (rel_t *s)
 {
+    while(s->send_next - s->send_una <= s->maximal_pot_window){
+        packet_t p = {};
+        int payload = conn_input(s->c, p.data, 500);
+        if(payload <= 0){
+            return;
+        } else {
+            p.len = htons(payload + 12);
+            p.ackno = 0;
+            p.seqno = htonl(s->send_next);
+            p.cksum = cksum(&p, payload + 12);
+            buffer_insert(s->send_buffer,&p,obtain_time());
+            s->send_next = (s->send_next) + 1;
+            conn_sendpkt(s->c,&p, payload + 12);
+            
+
+        }
+    }
 }
 
 void
