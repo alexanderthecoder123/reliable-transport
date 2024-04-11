@@ -111,6 +111,16 @@ rel_destroy (rel_t *r)
 void
 rel_recvpkt (rel_t *r, packet_t *pkt, size_t n)
 {
+    if(ntohs(pkt->len) != n){
+        return;
+    }
+    int check_sum_in_packet = pkt->cksum;
+    pkt->cksum = 0;
+    int actual_check_sum = cksum(pkt, ntohs(pkt->len));
+    if(check_sum_in_packet != actual_check_sum) {
+        return;
+    }
+
 }    
 
 void
