@@ -121,6 +121,15 @@ rel_recvpkt (rel_t *r, packet_t *pkt, size_t n)
         return;
     }
 
+    if(n == 8){ 
+        if(ntohl(pkt->ackno) > r->send_una){
+            r->send_una = ntohl(pkt->ackno);
+        }
+
+        buffer_remove(r->send_buffer, r->send_una);
+    
+        rel_read(r);
+    }
 }    
 
 void
