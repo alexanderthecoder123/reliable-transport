@@ -147,6 +147,15 @@ rel_recvpkt (rel_t *r, packet_t *pkt, size_t n)
                 rel_output(r);
             }
 
+            packet_t new_pkt = {
+                .cksum = 0, 
+                .len = htons(8), 
+                .ackno= htonl(r->recv_next)
+            }; 
+            new_pkt.cksum = cksum(&new_pkt,8);
+            conn_sendpkt(r->c, &new_pkt, 8);
+
+            buffer_remove(r->rec_buffer,r->recv_next);
 
         }        
     }
