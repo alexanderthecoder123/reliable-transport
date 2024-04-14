@@ -129,6 +129,26 @@ rel_recvpkt (rel_t *r, packet_t *pkt, size_t n)
         buffer_remove(r->send_buffer, r->send_una);
     
         rel_read(r);
+    } else{
+        if(ntohl(pkt->seqno) >= r->recv_next + r->maximal_pot_window){
+            return;
+        } else {
+
+            if(ntohl(pkt->seqno) >= r->recv_next + r->maximal_pot_window){
+                return;
+            } 
+
+            if(!buffer_contains(r->rec_buffer, ntohl(pkt->seqno))){
+                 buffer_insert(r->rec_buffer, pkt, 0);
+            }
+            
+           
+            if(ntohl(pkt->seqno) == r->recv_next){
+                rel_output(r);
+            }
+
+
+        }        
     }
 }    
 
