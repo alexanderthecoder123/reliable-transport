@@ -186,6 +186,16 @@ rel_read (rel_t *s)
 void
 rel_output (rel_t *r)
 {
+    buffer_node_t *cur = buffer_get_first(r->rec_buffer);
+    while(cur != NULL && ntohl(cur->packet.seqno) == r->recv_next){
+        if(ntohs(cur->packet.len)-12 > conn_bufspace(r->c)){
+            return;
+        } else if(ntohs(cur->packet.len)-12 <= conn_bufspace(r->c)) {
+            conn_output(r->c,cur->packet.data, ntohs(cur->packet.len)-12);
+            cur = cur->next;
+            r->recv_next++;
+        }
+    }
 }
 
 void
