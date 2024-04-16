@@ -129,6 +129,35 @@ rel_recvpkt (rel_t *r, packet_t *pkt, size_t n)
         buffer_remove(r->send_buffer, r->send_una);
     
         rel_read(r);
+    } else{
+        if(ntohl(pkt->seqno) >= r->recv_next + r->maximal_pot_window){
+            return;
+        } else {
+
+            if(ntohl(pkt->seqno) >= r->recv_next + r->maximal_pot_window){
+                return;
+            } 
+
+            if(!buffer_contains(r->rec_buffer, ntohl(pkt->seqno))){
+                 buffer_insert(r->rec_buffer, pkt, 0);
+            }
+            
+           
+            if(ntohl(pkt->seqno) == r->recv_next){
+                rel_output(r);
+            }
+
+            packet_t new_pkt = {
+                .cksum = 0, 
+                .len = htons(8), 
+                .ackno= htonl(r->recv_next)
+            }; 
+            new_pkt.cksum = cksum(&new_pkt,8);
+            conn_sendpkt(r->c, &new_pkt, 8);
+
+            buffer_remove(r->rec_buffer,r->recv_next);
+
+        }        
     }
 }    
 
@@ -157,6 +186,16 @@ rel_read (rel_t *s)
 void
 rel_output (rel_t *r)
 {
+    buffer_node_t *cur = buffer_get_first(r->rec_buffer);
+    while(cur != NULL && ntohl(cur->packet.seqno) == r->recv_next){
+        if(ntohs(cur->packet.len)-12 > conn_bufspace(r->c)){
+            return;
+        } else if(ntohs(cur->packet.len)-12 <= conn_bufspace(r->c)) {
+            conn_output(r->c,cur->packet.data, ntohs(cur->packet.len)-12);
+            cur = cur->next;
+            r->recv_next++;
+        }
+    }
 }
 
 void
