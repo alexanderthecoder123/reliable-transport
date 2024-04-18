@@ -201,5 +201,22 @@ rel_output (rel_t *r)
 void
 rel_timer ()
 {
+
+    rel_t *current = rel_list;
+    while (current != NULL) {
+
+        buffer_node_t *n = buffer_get_first(current->send_buffer);
+        while(n != NULL ){
+            if(n->last_retransmit + current->time_out < obtain_time()){
+                fprintf(stderr, "resend packet no %d\n", ntohl(n->packet.seqno));
+                n->last_retransmit = obtain_time();
+                conn_sendpkt(current->c, &(n->packet), ntohs(n->packet.len));
+            }
+            n = n->next;
+        }
+
+        current = current->next;
+    }
+    
 }
 
