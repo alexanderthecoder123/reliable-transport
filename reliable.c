@@ -138,6 +138,10 @@ rel_recvpkt (rel_t *r, packet_t *pkt, size_t n)
                 return;
             } 
 
+            if(n==12){
+                fprintf(stderr, "set eof_other %d\n", r->recv_next);
+                r->end_of_file_recv = 1;
+            }
             if(!buffer_contains(r->rec_buffer, ntohl(pkt->seqno))){
                  buffer_insert(r->rec_buffer, pkt, 0);
             }
@@ -167,9 +171,13 @@ rel_read (rel_t *s)
     while(s->send_next - s->send_una <= s->maximal_pot_window){
         packet_t p = {};
         int payload = conn_input(s->c, p.data, 500);
-        if(payload <= 0){
+        if(payload == 0){
             return;
         } else {
+            if(payload == -1 && !s->end_of_file_read){
+                s->end_of_file_read = 1;
+                payload = 0;
+            }
             p.len = htons(payload + 12);
             p.ackno = 0;
             p.seqno = htonl(s->send_next);
