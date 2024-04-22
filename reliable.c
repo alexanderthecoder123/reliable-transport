@@ -127,6 +127,9 @@ rel_recvpkt (rel_t *r, packet_t *pkt, size_t n)
         }
 
         buffer_remove(r->send_buffer, r->send_una);
+        if(r->end_of_file_recv && r->end_of_file_read && buffer_size(r->send_buffer) == 0 &&    buffer_size(r->rec_buffer) == 0 && r->send_una == r->send_next){
+            rel_destroy(r);
+        }
     
         rel_read(r);
     } else{
@@ -161,6 +164,9 @@ rel_recvpkt (rel_t *r, packet_t *pkt, size_t n)
 
             buffer_remove(r->rec_buffer,r->recv_next);
 
+            if(r->end_of_file_recv && r->end_of_file_read && buffer_size(r->send_buffer) == 0 &&    buffer_size(r->rec_buffer) == 0 && r->send_una == r->send_next){
+                rel_destroy(r);
+            }
         }        
     }
 }    
@@ -186,7 +192,13 @@ rel_read (rel_t *s)
             s->send_next = (s->send_next) + 1;
             conn_sendpkt(s->c,&p, payload + 12);
             
+            if(s->end_of_file_recv && s->end_of_file_read && buffer_size(s->send_buffer) == 0 && buffer_size(s->rec_buffer) == 0 && s->send_una == s->send_next){
+                rel_destroy(s);
+            }
 
+        }
+        if(s->end_of_file_recv && s->end_of_file_read && buffer_size(s->send_buffer) == 0 && buffer_size(s->rec_buffer) == 0 && s->send_una == s->send_next){
+            rel_destroy(s);
         }
     }
 }
