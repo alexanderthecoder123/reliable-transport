@@ -1,0 +1,7 @@
+
+String print:
+fprintf(stderr, "%s\n", );
+
+int print template:
+fprintf(stderr, " :%d\n", );
+
