@@ -1,0 +1,42 @@
+# Local editor and operating system files
+.vscode/
+.idea/
+.DS_Store
+._*
+*~
+*.swp
+*.swo
+
+# Compiled files and build output
+*.o
+*.a
+*.so
+*.dylib
+*.hi
+*.dSYM/
+/build/
+/reliable
+/reliable.tar.gz
+/reliable.c-dist
+
+# Keep the supplied Linux test executables locally
+/tester
+/reference
+/reliable_no_answer
+
+# Test output and local notes
+*.log
+*.tmp
+/outreliable.txt
+/print_command.txt
+/terminal_commands.rtf
+/todo.txt
+
+# Python environments and caches
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
